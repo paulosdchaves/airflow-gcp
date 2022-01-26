@@ -1,4 +1,4 @@
-PROJECT_ID := airflow-tdd-ci-workflow
+PROJECT_ID := dev-stg
 SHELL := /bin/bash
 VENV_DIR := ${CURDIR}/.venv/bin
 VENV_PYTHON := ${VENV_DIR}/python
