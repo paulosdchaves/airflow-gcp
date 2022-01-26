@@ -59,7 +59,13 @@ setup:
 	sleep 240
 	docker exec airflow airflow users create --username admin --password admin --role Admin --firstname Paulo --lastname Chaves --email admin@email.com
 	docker exec airflow airflow connections add 'legacy' --conn-uri 'postgresql://root:root@legacy-database:5432/legacy'
-	docker exec airflow airflow connections add --conn_id '${CONNECTION_ID_GCP_DEFAULT}' --conn_uri "${AIRFLOW_CONN_GOOGLE_CLOUD_DEFAULT}"
+	docker exec airflow airflow connections add 'google_cloud_default' \
+												--conn-extra='{ "extra__google_cloud_platform__key_path ":" '`
+																`'/home/paulo/repos/personal/boticario/boticario-case/airflow-sa.json", '`
+																`'"extra__google_cloud_platform__project": '`
+																`'"dev-stg", '`
+																`'"extra__google_cloud_platform__scope":  '`
+																`'"https://www.googleapis.com/auth/cloud-platform"}'
 
 .PHONY: down
 down:
