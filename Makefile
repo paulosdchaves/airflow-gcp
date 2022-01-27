@@ -58,7 +58,7 @@ format: autoflake isort black
 .PHONY: setup
 setup:
 	docker-compose up -d --force-recreate --remove-orphans
-	sleep 240
+	sleep 120
 	docker exec airflow airflow users create --username admin --password admin --role Admin --firstname Paulo --lastname Chaves --email admin@email.com
 	docker exec airflow airflow connections add 'legacy' --conn-uri 'postgresql://root:root@legacy-database:5432/legacy'
 
