@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS {tablename} (
-    id_marca    INTEGER,
-    marca       TEXT,
-    id_linha    INTEGER,
-    linha       INTEGER,
-    data_venda  DATE,
-    qtd_venda   INTEGER
+    ID_MARCA    INTEGER,
+    MARCA       TEXT,
+    ID_LINHA    INTEGER,
+    LINHA       INTEGER,
+    DATA_VENDA  DATE,
+    QTD_VENDA   INTEGER
 );
