@@ -1,5 +1,6 @@
 import pandas as pd
 from airflow.providers.postgres.hooks.postgres import PostgresHook
+from pandas._testing import assert_frame_equal
 
 
 def insert_initial_data(filename, tablename, hook):
@@ -32,7 +33,7 @@ class TestSalesPipeline:
         legacy_sales_2017_size = legacy_hook.get_records("select * from sales")
         assert len(legacy_sales_2017_size) == 1000
 
-        # expected_sales_data = output_df("Base_2017")
+        expected_sales_data = output_df("Base_2017")
 
-        # legacy_sales_data = legacy_hook.get_pandas_df("select * from sales")
-        # assert_frame_equal(legacy_sales_data, expected_sales_data)
+        legacy_sales_data = legacy_hook.get_pandas_df("select * from sales")
+        assert_frame_equal(legacy_sales_data, expected_sales_data)
