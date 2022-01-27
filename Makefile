@@ -5,9 +5,11 @@ VENV_PYTHON := ${VENV_DIR}/python
 PYTEST_ARGS := ""
 TAG := $(shell git rev-parse --short HEAD)
 ENVIRONMENT := dev
-gcp_key_path :=/home/paulo/repos/personal/boticario/boticario-case/airflow-sa.json
-CONNECTION_ID_GCP_DEFAULT := google_cloud_default
-AIRFLOW_CONN_GOOGLE_CLOUD_DEFAULT='google-cloud-platform://?extra__google_cloud_platform__key_path=${gcp_key_path}&extra__google_cloud_platform__scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcloud-platform&extra__google_cloud_platform__project=airflow&extra__google_cloud_platform__num_retries=5'
+AIRFLOW__CORE__LOAD_EXAMPLES := false
+# Fake GCS Connection
+AIRFLOW_CONN_GOOGLE_CLOUD_DEFAULT='google-cloud-platform://?extra__google_cloud_platform__key_path=%2Fkeys%2Fkey.json&extra__google_cloud_platform__scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcloud-platform&extra__google_cloud_platform__project=airflow&extra__google_cloud_platform__num_retries=5'
+# Fake config
+AIRFLOW_VAR_ETL_CONFIG := "{}"
 
 include .env
 
@@ -59,13 +61,6 @@ setup:
 	sleep 240
 	docker exec airflow airflow users create --username admin --password admin --role Admin --firstname Paulo --lastname Chaves --email admin@email.com
 	docker exec airflow airflow connections add 'legacy' --conn-uri 'postgresql://root:root@legacy-database:5432/legacy'
-	docker exec airflow airflow connections add 'google_cloud_default' \
-												--conn-extra='{ "extra__google_cloud_platform__key_path ":" '`
-																`'/home/paulo/repos/personal/boticario/boticario-case/airflow-sa.json", '`
-																`'"extra__google_cloud_platform__project": '`
-																`'"dev-stg", '`
-																`'"extra__google_cloud_platform__scope":  '`
-																`'"https://www.googleapis.com/auth/cloud-platform"}'
 
 .PHONY: down
 down:
