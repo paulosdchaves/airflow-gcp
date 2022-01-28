@@ -26,7 +26,7 @@ base_file_path = "tests/output/"
 
 # test_sales_pipeline.py
 class TestSalesPipeline:
-    @pytest.mark.run(order=-1)
+    @pytest.mark.dependency(name="test_a")
     def test_validate_sales_pipeline(self):
 
         legacy_hook = PostgresHook("legacy")

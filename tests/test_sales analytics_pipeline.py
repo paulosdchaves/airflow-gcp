@@ -5,20 +5,21 @@ import pytest
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from pandas._testing import assert_frame_equal
 
+from tests.test_sales_pipeline import TestSalesPipeline
+
 
 def output_df(filename):
     return pd.read_parquet(f"/opt/airflow/tests/output/{filename}.parquet")
 
 
 # test_sales analytics_pipeline.py
-class TestSalesAnalyticsPipeline:
-    @pytest.mark.dependency(depends=["TestSalesPipeline::test_validate_sales_pipeline"])
-    @pytest.mark.run(order=1)
+class TestSalesAnalyticsPipeline(TestSalesPipeline):
+    @pytest.mark.dependency(depends=["test_a"])
     def test_validate_dataframe_pipeline(self):
 
         legacy_hook = PostgresHook("legacy")
 
-        list_tables = ["sales_year_month", "sales_brand_line"]
+        list_tables = ["sales_year_month", "sales_brand_line", "sales_brand_year_month"]
 
         for table in list_tables:
 
