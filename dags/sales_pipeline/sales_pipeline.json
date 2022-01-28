@@ -1,5 +1,5 @@
 {
-    "sales": {
+    "sales_by_year_month": {
         "query_sql": "select * from sales LIMIT 50",
         "database": "legacy"
     }

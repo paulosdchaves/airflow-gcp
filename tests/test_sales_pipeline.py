@@ -1,5 +1,3 @@
-import os
-
 import pandas as pd
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from pandas._testing import assert_frame_equal
@@ -41,9 +39,3 @@ class TestSalesPipeline:
 
         legacy_sales_data = legacy_hook.get_pandas_df("select * from sales")
         assert_frame_equal(legacy_sales_data, expected_sales_data)
-
-        df = legacy_hook.get_pandas_df(sql="select * from sales LIMIT 10")
-
-        filename = f"sales.parquet"
-        path = os.path.join("/opt/airflow/tests/output/", filename)
-        df.to_parquet(path)

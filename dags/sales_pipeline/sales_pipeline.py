@@ -1,14 +1,15 @@
-import datetime
 import json
 import logging
 import os
+import tempfile
 from pathlib import Path
 
 import airflow
 import yaml
 from airflow import DAG
-from airflow.contrib.hooks.gcs_hook import GoogleCloudStorageHook
 from airflow.operators.dummy_operator import DummyOperator
+from airflow.operators.python import PythonOperator
+from airflow.providers.google.cloud.hooks.gcs import GCSHook
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.utils.trigger_rule import TriggerRule
 
@@ -32,59 +33,31 @@ with open(JSON_CONFIG_FILE) as json_file:
     entities_config = json.load(json_file)
 
 
-def parquet_to_gcs(entity_snake_case, query_sql, database, bucket_name):
-    gcs_hook = GoogleCloudStorageHook(GOOGLE_CONN_ID)
+def parquet_to_gcs(entity_snake_case, query_sql, database, bucket_name, **context):
+    year = context["execution_date"].year
+    month = context["execution_date"].month
+
     pg_hook = PostgresHook(f"{database}")
 
     # Execute the query
     logging.info("Exporting sql to parquet '%s'", entity_snake_case)
     df = pg_hook.get_pandas_df(sql=query_sql)
 
-    prefix = "sales_{}.ftr".format(datetime.timedelta(days=1)).strftime("%Y%m%d")
-    filename = os.path.join("airflow/tests/output/", prefix)
-    df.to_parquet(filename, index=False)
+    prefix = "sales.parquet"
 
-    with open(filename, "rb") as source_file:
+    # Write sales to temp file.
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        tmp_path = os.path.join(tmp_dir, prefix)
+        df.to_parquet(tmp_path, index=False)
 
-        logging.info("Uploading to %s/%s", bucket_name, source_file)
-        gcs_hook.upload(bucket_name, source_file, prefix)
-
-
-# def create_fact_table(entity_snake_case, fact_sql, destination_fact, dag):
-#     return BigQueryOperator(
-#         task_id=f"tk_fat_{entity_snake_case}",
-#         use_legacy_sql=False,
-#         create_disposition="CREATE_IF_NEEDED",
-#         write_disposition="WRITE_TRUNCATE",
-#         params={
-#             "idProject": config["environment"]["project_id"],
-#             "idDataSet": config["environment"]["refined_dataset_id"],
-#         },
-#         allow_large_results=True,
-#         sql=fact_sql,
-#         destination_dataset_table=f"{config['environment']['project_id']}.{config['environment']['refined_dataset_id']}.{destination_fact}",
-#         bigquery_conn_id="gcp_vida_previdencia",
-#         dag=dag,
-#     )
-
-
-# def create_vis_table(entity_snake_case, vis_sql, destination_vis, dag):
-#     return BigQueryOperator(
-#         task_id=f"tk_vis_{entity_snake_case}",
-#         use_legacy_sql=False,
-#         create_disposition="CREATE_IF_NEEDED",
-#         write_disposition="WRITE_TRUNCATE",
-#         params={
-#             "idProject": config["environment"]["project_id"],
-#             "idDataSet": config["environment"]["refined_dataset_id"],
-#         },
-#         allow_large_results=True,
-#         sql=vis_sql,
-#         destination_dataset_table=f"{config['environment']['project_id']}.{config['environment']['dmt_dataset_id']}.{destination_vis}",
-#         bigquery_conn_id="gcp_vida_previdencia",
-#         dag=dag,
-#         trigger_rule=TriggerRule.ALL_DONE,
-#     )
+        # Upload file to GCS.
+        logging.info(f"Writing results to sales/{year}/{month:02d}.csv")
+        gcs_hook = GCSHook(GOOGLE_CONN_ID)
+        gcs_hook.upload(
+            bucket_name=bucket_name,
+            object_name=f"sales/{year}/{month:02d}/{prefix}",
+            filename=tmp_path,
+        )
 
 
 def create_dag(
@@ -116,8 +89,16 @@ def create_dag(
             task_id="end_pipeline", trigger_rule=TriggerRule.ALL_DONE, dag=dag
         )
 
-        postgresql_to_parquet = parquet_to_gcs(
-            entity_snake_case, query_sql, database, bucket_name, dag
+        postgresql_to_parquet = PythonOperator(
+            task_id=f"copy_to_gcs_{entity_snake_case}",
+            python_callable=parquet_to_gcs,
+            op_kwargs={
+                "entity_snake_case": entity_snake_case,
+                "query_sql": query_sql,
+                "database": database,
+                "bucket_name": bucket_name,
+            },
+            dag=dag,
         )
 
         postgresql_to_parquet.set_upstream(start_pipeline)
