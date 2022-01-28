@@ -1,0 +1,6 @@
+{
+    "sales": {
+        "query_sql": "select * from sales LIMIT 50",
+        "database": "legacy"
+    }
+}

@@ -9,4 +9,3 @@ pytest-cov
 sqlAlchemy
 pandas
 psycopg2-binary
-fastparquet
