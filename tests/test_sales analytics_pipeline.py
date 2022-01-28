@@ -15,11 +15,17 @@ def output_df(filename):
 # test_sales analytics_pipeline.py
 class TestSalesAnalyticsPipeline(TestSalesPipeline):
     @pytest.mark.dependency(depends=["test_a"])
+    @pytest.mark.order(2)
     def test_validate_dataframe_pipeline(self):
 
         legacy_hook = PostgresHook("legacy")
 
-        list_tables = ["sales_year_month", "sales_brand_line", "sales_brand_year_month"]
+        list_tables = [
+            "sales_year_month",
+            "sales_brand_line",
+            "sales_brand_year_month",
+            "sales_line_year_month",
+        ]
 
         for table in list_tables:
 
