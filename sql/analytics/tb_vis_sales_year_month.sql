@@ -6,11 +6,11 @@ SELECT
 FROM
     (
         SELECT
-            SUBSTR(sales.DATA_VENDA, 1, 2) as MES,
-            SUBSTR(sales.DATA_VENDA, 7, 4) as ANO,
-            sales.QTD_VENDA as QTD_VENDA
+            SUBSTR("sales"."DATA_VENDA", 1, 2) as MES,
+            SUBSTR("sales"."DATA_VENDA", 7, 4) as ANO,
+            "sales"."QTD_VENDA" as QTD_VENDA
         FROM
-            sales
+            "public"."sales"
     ) sales
 GROUP BY
     sales.ANO,
