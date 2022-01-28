@@ -1,6 +1,6 @@
 {
-    "sales_by_year_month": {
-        "query_sql": "select * from sales LIMIT 50",
+    "sales_year_month": {
+        "query_sql": "/opt/airflow/sql/analytics/tb_vis_sales_year_month.sql",
         "database": "legacy"
     }
 }

@@ -43,7 +43,7 @@ def parquet_to_gcs(entity_snake_case, query_sql, database, bucket_name, **contex
     logging.info("Exporting sql to parquet '%s'", entity_snake_case)
     df = pg_hook.get_pandas_df(sql=query_sql)
 
-    prefix = "sales.parquet"
+    prefix = f"{entity_snake_case}.parquet"
 
     # Write sales to temp file.
     with tempfile.TemporaryDirectory() as tmp_dir:
@@ -55,7 +55,7 @@ def parquet_to_gcs(entity_snake_case, query_sql, database, bucket_name, **contex
         gcs_hook = GCSHook(GOOGLE_CONN_ID)
         gcs_hook.upload(
             bucket_name=bucket_name,
-            object_name=f"sales/{year}/{month:02d}/{prefix}",
+            object_name=f"sales/{prefix}",
             filename=tmp_path,
         )
 

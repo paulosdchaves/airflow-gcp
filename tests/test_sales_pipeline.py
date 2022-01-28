@@ -1,5 +1,6 @@
+import os
+
 import pandas as pd
-import pytest
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from pandas._testing import assert_frame_equal
 
@@ -22,12 +23,14 @@ def output_df(filename):
     return pd.read_csv(f"/opt/airflow/data/{filename}.csv")
 
 
+def output_parquet(filename):
+    return pd.read_parquet(f"/opt/airflow/tests/output/{filename}.parquet")
+
+
 base_file_path = "tests/output/"
 
 # test_sales_pipeline.py
 class TestSalesPipeline:
-    @pytest.mark.dependency(name="test_a")
-    @pytest.mark.order(1)
     def test_validate_sales_pipeline(self):
 
         legacy_hook = PostgresHook("legacy")
@@ -42,3 +45,25 @@ class TestSalesPipeline:
 
         legacy_sales_data = legacy_hook.get_pandas_df("select * from sales")
         assert_frame_equal(legacy_sales_data, expected_sales_data)
+
+        list_tables = [
+            "sales_year_month",
+            "sales_brand_line",
+            "sales_brand_year_month",
+            "sales_line_year_month",
+        ]
+
+        for table in list_tables:
+
+            query = open(f"/opt/airflow/sql/analytics/tb_vis_{table}.sql").read()
+
+            df = legacy_hook.get_pandas_df(query)
+
+            filename = f"{table}.parquet"
+            path = os.path.join("/opt/airflow/tests/output/", filename)
+            df.to_parquet(path)
+
+            expected_data = output_parquet(table)
+
+            sales_analytics_data = legacy_hook.get_pandas_df(query)
+            assert_frame_equal(sales_analytics_data, expected_data)
