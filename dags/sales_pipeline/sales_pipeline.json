@@ -2,5 +2,17 @@
     "sales_year_month": {
         "query_sql": "/opt/airflow/sql/analytics/tb_vis_sales_year_month.sql",
         "database": "legacy"
+    },
+    "sales_brand_line": {
+        "query_sql": "/opt/airflow/sql/analytics/tb_vis_sales_brand_line.sql",
+        "database": "legacy"
+    },
+    "sales_brand_year_month": {
+        "query_sql": "/opt/airflow/sql/analytics/tb_vis_sales_brand_year_month.sql",
+        "database": "legacy"
+    },
+    "sales_line_year_month": {
+        "query_sql": "/opt/airflow/sql/analytics/tb_vis_sales_line_year_month.sql",
+        "database": "legacy"
     }
 }

@@ -1,4 +1,4 @@
--- TABLE 3: Consolidado de vendas por linha, ano e mês
+-- TABLE 4: Consolidado de vendas por linha, ano e mês
 SELECT
     sales.LINHA,
     sales.ANO,

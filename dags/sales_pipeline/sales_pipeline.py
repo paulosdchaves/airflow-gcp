@@ -41,7 +41,7 @@ def parquet_to_gcs(entity_snake_case, query_sql, database, bucket_name, **contex
 
     # Execute the query
     logging.info("Exporting sql to parquet '%s'", entity_snake_case)
-    df = pg_hook.get_pandas_df(sql=query_sql)
+    df = pg_hook.get_pandas_df(sql=open(query_sql).read())
 
     prefix = f"{entity_snake_case}.parquet"
 
