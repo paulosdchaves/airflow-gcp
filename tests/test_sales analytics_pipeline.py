@@ -12,7 +12,8 @@ def output_df(filename):
 
 # test_sales analytics_pipeline.py
 class TestSalesAnalyticsPipeline:
-    @pytest.mark.dependency(name="b", depends=["a"])
+    @pytest.mark.dependency(name="test_b", depends=["test_a"])
+    @pytest.mark.run(order=1)
     def test_validate_dataframe_pipeline(self):
 
         legacy_hook = PostgresHook("legacy")
