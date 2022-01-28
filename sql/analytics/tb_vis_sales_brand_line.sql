@@ -1,20 +1,20 @@
 -- TABLE 2: Consolidado de vendas por marca e linha
 SELECT
-    sales.ANO,
-    sales.MES,
+    sales.MARCA,
+    sales.LINHA,
     SUM(sales.QTD_VENDA) AS TOTAL_VENDAS
 FROM
     (
         SELECT
-            SUBSTR("sales"."DATA_VENDA", 1, 2) as MES,
-            SUBSTR("sales"."DATA_VENDA", 7, 4) as ANO,
+            "sales"."MARCA" as MARCA,
+            "sales"."LINHA" as LINHA,
             "sales"."QTD_VENDA" as QTD_VENDA
         FROM
             "sales"
     ) sales
 GROUP BY
-    sales.ANO,
-    sales.MES
+    sales.MARCA,
+    sales.LINHA
 ORDER BY
-    sales.ANO ASC,
-    sales.MES ASC;
+    sales.MARCA ASC,
+    sales.LINHA ASC;

@@ -12,13 +12,13 @@ def output_df(filename):
 
 # test_sales analytics_pipeline.py
 class TestSalesAnalyticsPipeline:
-    @pytest.mark.dependency(name="test_b", depends=["test_a"])
+    @pytest.mark.dependency(depends=["TestSalesPipeline::test_validate_sales_pipeline"])
     @pytest.mark.run(order=1)
     def test_validate_dataframe_pipeline(self):
 
         legacy_hook = PostgresHook("legacy")
 
-        list_tables = ["sales_year_month"]
+        list_tables = ["sales_year_month", "sales_brand_line"]
 
         for table in list_tables:
 
@@ -29,9 +29,6 @@ class TestSalesAnalyticsPipeline:
             filename = f"{table}.parquet"
             path = os.path.join("/opt/airflow/tests/output/", filename)
             df.to_parquet(path)
-
-            sales_analytics_size = legacy_hook.get_records(query)
-            assert len(sales_analytics_size) == 12
 
             expected_data = output_df(table)
 

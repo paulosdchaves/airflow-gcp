@@ -10,7 +10,7 @@ FROM
             SUBSTR("sales"."DATA_VENDA", 7, 4) as ANO,
             "sales"."QTD_VENDA" as QTD_VENDA
         FROM
-            "public"."sales"
+            "sales"
     ) sales
 GROUP BY
     sales.ANO,
