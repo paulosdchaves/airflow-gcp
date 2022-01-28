@@ -1,4 +1,5 @@
 import pandas as pd
+import pytest
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from pandas._testing import assert_frame_equal
 
@@ -25,6 +26,8 @@ base_file_path = "tests/output/"
 
 # test_sales_pipeline.py
 class TestSalesPipeline:
+    @pytest.mark.dependency(name="a")
+    @pytest.mark.xfail(reason="deliberate fail")
     def test_validate_sales_pipeline(self):
 
         legacy_hook = PostgresHook("legacy")
