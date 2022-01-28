@@ -7,6 +7,7 @@ from pathlib import Path
 import airflow
 import yaml
 from airflow import DAG
+from airflow.contrib.operators import gcs_to_bq
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.python import PythonOperator
 from airflow.providers.google.cloud.hooks.gcs import GCSHook
@@ -60,6 +61,28 @@ def parquet_to_gcs(entity_snake_case, query_sql, database, bucket_name, **contex
         )
 
 
+def generate_export_gcs_to_bq(
+    entity_snake_case,
+    bucket_name,
+    destination_dataset_table,
+    dag,
+):
+
+    return gcs_to_bq.GoogleCloudStorageToBigQueryOperator(
+        task_id=f"tk_gcs_to_bq_{entity_snake_case}",
+        bucket=bucket_name,
+        source_objects=[f"sales/{entity_snake_case}.parquet"],
+        destination_project_dataset_table=destination_dataset_table,
+        source_format="PARQUET",
+        create_disposition="CREATE_IF_NEEDED",
+        write_disposition="WRITE_TRUNCATE",
+        bigquery_conn_id=GOOGLE_CONN_ID,
+        google_cloud_storage_conn_id=GOOGLE_CONN_ID,
+        dag=dag,
+        autodetect=True,
+    )
+
+
 def create_dag(
     dag_id,
     schedule_interval,
@@ -68,6 +91,7 @@ def create_dag(
     entity_snake_case,
     query_sql,
     database,
+    destination_dataset_table,
     bucket_name,
     default_args,
 ):
@@ -90,7 +114,7 @@ def create_dag(
         )
 
         postgresql_to_parquet = PythonOperator(
-            task_id=f"copy_to_gcs_{entity_snake_case}",
+            task_id=f"tk_copy_to_gcs_{entity_snake_case}",
             python_callable=parquet_to_gcs,
             op_kwargs={
                 "entity_snake_case": entity_snake_case,
@@ -101,8 +125,16 @@ def create_dag(
             dag=dag,
         )
 
+        export_gcs_to_bq = generate_export_gcs_to_bq(
+            entity_snake_case,
+            bucket_name,
+            destination_dataset_table,
+            dag,
+        )
+
         postgresql_to_parquet.set_upstream(start_pipeline)
-        end_pipeline.set_upstream(postgresql_to_parquet)
+        export_gcs_to_bq.set_upstream(postgresql_to_parquet)
+        end_pipeline.set_upstream(export_gcs_to_bq)
 
     return dag
 
@@ -119,6 +151,7 @@ for entity, entity_config in entities_config.items():
         entity_snake_case=entity,
         query_sql=entity_config["query_sql"],
         database=entity_config["database"],
+        destination_dataset_table=entity_config["destination_dataset_table"],
         bucket_name=config["environment"]["refined_bucket"],
         default_args=config["dag"],
     )

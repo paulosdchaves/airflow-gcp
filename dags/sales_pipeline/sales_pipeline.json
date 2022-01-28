@@ -1,18 +1,22 @@
 {
     "sales_year_month": {
         "query_sql": "/opt/airflow/sql/analytics/tb_vis_sales_year_month.sql",
-        "database": "legacy"
+        "database": "legacy",
+        "destination_dataset_table": "boticario.TB_VIS_VENDAS_ANO_MES"
     },
     "sales_brand_line": {
         "query_sql": "/opt/airflow/sql/analytics/tb_vis_sales_brand_line.sql",
-        "database": "legacy"
+        "database": "legacy",
+        "destination_dataset_table": "boticario.TB_VIS_VENDAS_MARCA_LINHA"
     },
     "sales_brand_year_month": {
         "query_sql": "/opt/airflow/sql/analytics/tb_vis_sales_brand_year_month.sql",
-        "database": "legacy"
+        "database": "legacy",
+        "destination_dataset_table": "boticario.TB_VIS_VENDAS_MARCA_ANO_MES"
     },
     "sales_line_year_month": {
         "query_sql": "/opt/airflow/sql/analytics/tb_vis_sales_line_year_month.sql",
-        "database": "legacy"
+        "database": "legacy",
+        "destination_dataset_table": "boticario.TB_VIS_VENDAS_LINHA_ANO_MES"
     }
 }

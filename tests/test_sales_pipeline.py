@@ -22,7 +22,7 @@ def output_df(filename):
 
 
 def output_parquet(filename):
-    return pd.read_parquet(f"/opt/airflow/tests/output/{filename}.parquet")
+    return pd.read_parquet(f"/opt/airflow/tests/fixtures/{filename}.parquet")
 
 
 base_file_path = "tests/output/"
@@ -44,24 +44,17 @@ class TestSalesPipeline:
         legacy_sales_data = legacy_hook.get_pandas_df("select * from sales")
         assert_frame_equal(legacy_sales_data, expected_sales_data)
 
-        # list_tables = [
-        #     "sales_year_month",
-        #     "sales_brand_line",
-        #     "sales_brand_year_month",
-        #     "sales_line_year_month",
-        # ]
+        list_tables = [
+            "sales_year_month",
+            "sales_brand_line",
+            "sales_brand_year_month",
+            "sales_line_year_month",
+        ]
 
-        # for table in list_tables:
+        for table in list_tables:
 
-        #     query = open(f"/opt/airflow/sql/analytics/tb_vis_{table}.sql").read()
+            query = open(f"/opt/airflow/sql/analytics/tb_vis_{table}.sql").read()
+            expected_data = output_parquet(table)
 
-        #     df = legacy_hook.get_pandas_df(query)
-
-        #     filename = f"{table}.parquet"
-        #     path = os.path.join("/opt/airflow/tests/output/", filename)
-        #     df.to_parquet(path)
-
-        #     expected_data = output_parquet(table)
-
-        #     sales_analytics_data = legacy_hook.get_pandas_df(query)
-        #     assert_frame_equal(sales_analytics_data, expected_data)
+            sales_analytics_data = legacy_hook.get_pandas_df(query)
+            assert_frame_equal(sales_analytics_data, expected_data)
