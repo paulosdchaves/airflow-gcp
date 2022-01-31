@@ -10,3 +10,4 @@ sqlAlchemy
 pandas
 psycopg2-binary
 types-PyYAML
+tweepy

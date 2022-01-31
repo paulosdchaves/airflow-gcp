@@ -1,0 +1,40 @@
+definitions:
+  steps:
+    - dag: &build-dag
+        schedule_interval: "@once"
+        is_paused_upon_creation: True
+        description: Twitter Pipeline - Boticario
+        default_args:
+          owner: "[Paulo Sergio Dias Chaves]"
+          depends_on_past: False
+          email_on_failure: False
+          email_on_retry: False
+          retries: 5
+          tags: [twitter, sql, gcp, gcs, bigquery, airflow, composer, boticario]
+    - environment: &build-environment
+        name: Build the dag environment
+        region: us-central1
+        environment: dev
+        project_id: dev-stg
+        refined_bucket: refined_dev
+        trusted_dataset_id: TRU_VENDAS
+        refined_dataset_id: REF_VENDAS
+        dmt_dataset_id: DMT_VENDAS
+        bearer_token: AAAAAAAAAAAAAAAAAAAAAFkzYgEAAAAALh1gWlzWpAwqeBIxnybiiMVsDrc%3Dho0Nm7gn3hI2Ux9kreOUWviJxuimVoLuAJgNhl1u0eMuOhbvYL
+
+dev:
+  dag: *build-dag
+  environment: *build-environment
+
+prd:
+  dag:
+    <<: *build-dag
+    schedule_interval: "@daily"
+    is_paused_upon_creation: False
+  environment:
+    <<: *build-environment
+    environment: prd
+    project_id: prd-stg
+    trusted_dataset_id: TRU_VENDAS
+    refined_dataset_id: REF_VENDAS
+    dmt_dataset_id: DMT_VENDAS

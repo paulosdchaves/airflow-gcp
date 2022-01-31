@@ -1,0 +1,8 @@
+{
+    "boticario": {
+        "search_words": "boticario",
+        "language": "pt",
+        "since": "2019-12-01",
+        "destination_dataset_table": "boticario.TB_TWITTERS"
+    }
+}
