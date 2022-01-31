@@ -141,7 +141,7 @@ def create_dag(
 
 for entity, entity_config in entities_config.items():
 
-    dag_id = f"pipeline_{entity}"
+    dag_id = f"{entity}_pipeline"
 
     globals()[dag_id] = create_dag(
         dag_id=dag_id,
