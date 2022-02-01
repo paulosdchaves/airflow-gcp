@@ -1,15 +1,18 @@
+import glob
+import os
+
 import pandas as pd
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from pandas._testing import assert_frame_equal
 
 
-def insert_initial_data(filename, tablename, hook):
+def insert_initial_data(tablename, hook):
     """This script will populate database with initial data to run job"""
     conn_engine = hook.get_sqlalchemy_engine()
-    sample_data = pd.read_csv(f"/opt/airflow/data/{filename}.csv")
-    sample_data.to_sql(
-        name=tablename, con=conn_engine, if_exists="replace", index=False
-    )
+    all_files = glob.glob(os.path.join("/opt/airflow/data/", "Base_*.csv"))
+    df_from_each_file = (pd.read_csv(f, sep=",") for f in all_files)
+    df_merged = pd.concat(df_from_each_file, ignore_index=True)
+    df_merged.to_sql(name=tablename, con=conn_engine, if_exists="replace", index=False)
 
 
 def create_table(tablename, hook):
@@ -34,27 +37,18 @@ class TestSalesPipeline:
         legacy_hook = PostgresHook("legacy")
 
         create_table("sales", legacy_hook)
-        insert_initial_data("Base_2017", "sales", legacy_hook)
+        insert_initial_data("sales", legacy_hook)
 
-        legacy_sales_2017_size = legacy_hook.get_records("select * from sales")
-        assert len(legacy_sales_2017_size) == 1000
+        legacy_sales_size = legacy_hook.get_records("select * from sales")
+        assert len(legacy_sales_size) == 3000
 
-        expected_sales_data = output_df("Base_2017")
+        years = ["2017", "2018", "2019"]
 
-        legacy_sales_data = legacy_hook.get_pandas_df("select * from sales")
-        assert_frame_equal(legacy_sales_data, expected_sales_data)
+        for year in years:
 
-        list_tables = [
-            "sales_year_month",
-            "sales_brand_line",
-            "sales_brand_year_month",
-            "sales_line_year_month",
-        ]
+            query = f'select * from "sales" WHERE SUBSTR("sales"."DATA_VENDA", 7, 4) = \'{year}\';'
 
-        for table in list_tables:
+            expected_sales_data = output_df(f"Base_{year}")
 
-            query = open(f"/opt/airflow/sql/analytics/tb_vis_{table}.sql").read()
-            expected_data = output_parquet(table)
-
-            sales_analytics_data = legacy_hook.get_pandas_df(query)
-            assert_frame_equal(sales_analytics_data, expected_data)
+            legacy_sales_data = legacy_hook.get_pandas_df(query)
+            assert_frame_equal(legacy_sales_data, expected_sales_data)
